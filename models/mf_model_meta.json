@@ -1,0 +1,14 @@
+{
+  "version": "20260602_200353",
+  "updated_at": "2026-06-02T20:03:53.597250",
+  "n_users": 55,
+  "n_movies": 335,
+  "training_info": {
+    "k": 20,
+    "steps": 50,
+    "lr": 0.01,
+    "reg": 0.02,
+    "n_ratings": 1542,
+    "training_time_seconds": 1.18
+  }
+}

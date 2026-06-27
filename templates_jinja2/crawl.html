@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}爬取导入 - 电影推荐系统{% endblock %}
+{% block content %}
+  <h2>爬取导入</h2>
+  <div class="card">
+    <form method="post" class="stack">
+      <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+      <div class="field">
+        <label>{{ form.url.label }}</label>
+        {{ form.url }}
+        <div class="muted">{{ form.url.help_text }}</div>
+      </div>
+      <div class="field">
+        <label>{{ form.limit.label }}</label>
+        {{ form.limit }}
+      </div>
+      <div>
+        <button class="btn primary" type="submit">开始爬取并入库</button>
+      </div>
+    </form>
+  </div>
+
+  {% if items is defined %}
+    <div style="margin-top:14px;" class="card">
+      <div><strong>来源：</strong>{{ source_url }}</div>
+      <div class="muted">抓取 {{ items|length }} 条，新建 {{ created }} 条</div>
+    </div>
+    <div style="margin-top:14px;" class="grid">
+      {% for it in items %}
+        <div class="card">
+          <div><strong>{{ it.title }}</strong></div>
+          <div class="muted">{{ it.year or '' }}</div>
+          <div style="margin-top:8px;">
+            <a href="{{ it.detail_url }}" target="_blank" rel="noreferrer">原始链接</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

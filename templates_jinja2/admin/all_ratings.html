@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}所有评分记录 - 管理员{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <a href="{{ url('admin_dashboard') }}" class="back-link">← 返回控制台</a>
+    <h1>所有评分记录</h1>
+    <p class="subtitle">共 {{ ratings|length }} 条记录（最多显示200条）</p>
+  </div>
+
+  <div class="filter-bar">
+    <form method="get" class="filter-form">
+      <div class="filter-group">
+        <label>用户名</label>
+        <input type="text" name="user" value="{{ user_filter }}" placeholder="搜索用户...">
+      </div>
+      <div class="filter-group">
+        <label>电影名</label>
+        <input type="text" name="movie" value="{{ movie_filter }}" placeholder="搜索电影...">
+      </div>
+      <div class="filter-group">
+        <label>评分</label>
+        <select name="score">
+          <option value="">全部</option>
+          {% for s in [1,2,3,4,5] %}
+            <option value="{{ s }}" {% if score_filter == s|string %}selected{% endif %}>{{ s }}星</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn primary">筛选</button>
+      <a href="{{ url('admin_all_ratings') }}" class="btn">重置</a>
+    </form>
+  </div>
+
+  {% if ratings %}
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>用户</th>
+            <th>电影</th>
+            <th>评分</th>
+            <th>评分时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in ratings %}
+            <tr>
+              <td>
+                <span class="user-badge">{{ r.user.username }}</span>
+              </td>
+              <td>
+                <a href="{{ url('movie_detail', movie_id=r.movie.id) }}" class="movie-link">
+                  {{ r.movie.title }}
+                  {% if r.movie.year %}({{ r.movie.year }}){% endif %}
+                </a>
+              </td>
+              <td>
+                <span class="score-badge score-{{ r.score }}">{{ r.score }}</span>
+              </td>
+              <td class="time-cell">{{ r.updated_at|date("Y-m-d H:i") }}</td>
+              <td>
+                <a href="{{ url('movie_detail', movie_id=r.movie.id) }}" class="action-link">查看</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📭</div>
+      <p>暂无评分记录</p>
+    </div>
+  {% endif %}
+
+  <style>
+    .page-header {
+      margin-bottom: 24px;
+    }
+    .back-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .back-link:hover {
+      color: var(--link);
+    }
+    .page-header h1 {
+      margin: 8px 0 4px;
+      font-size: 28px;
+    }
+    .subtitle {
+      color: var(--muted);
+      margin: 0;
+    }
+    .filter-bar {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .filter-form {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .filter-group label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .filter-group input,
+    .filter-group select {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      min-width: 140px;
+    }
+    .table-container {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .data-table th,
+    .data-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table th {
+      background: #f8f9fa;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .data-table tbody tr:hover {
+      background: #fafbfc;
+    }
+    .data-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .user-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .movie-link {
+      color: var(--fg);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .movie-link:hover {
+      color: var(--link);
+    }
+    .score-badge {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      line-height: 28px;
+      text-align: center;
+      border-radius: 50%;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .score-1 { background: #ffebee; color: #c62828; }
+    .score-2 { background: #fff3e0; color: #e65100; }
+    .score-3 { background: #fffde7; color: #f9a825; }
+    .score-4 { background: #e8f5e9; color: #2e7d32; }
+    .score-5 { background: #e3f2fd; color: #1565c0; }
+    .time-cell {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .action-link {
+      color: var(--link);
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .action-link:hover {
+      text-decoration: underline;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      background: #f8f9fa;
+      border-radius: 12px;
+    }
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    .empty-state p {
+      color: var(--muted);
+      margin: 0;
+    }
+  </style>
+{% endblock %}

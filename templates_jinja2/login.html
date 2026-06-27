@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}登录 - 电影推荐系统{% endblock %}
+{% block content %}
+  <h2>登录</h2>
+  <div class="card">
+    <form method="post" class="stack">
+      <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+      <div class="field">
+        <label>用户名</label>
+        {{ form.username }}
+      </div>
+      <div class="field">
+        <label>密码</label>
+        {{ form.password }}
+      </div>
+      <div>
+        <button class="btn primary" type="submit">登录</button>
+      </div>
+    </form>
+  </div>
+{% endblock %}

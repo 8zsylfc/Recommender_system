@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}首页 - 电影推荐系统{% endblock %}
+{% block content %}
+  <div class="row" style="margin: 14px 0;">
+    <div class="stack" style="flex:1;">
+      <h2 style="margin:0;">电影列表</h2>
+      <div class="muted">
+        {% if random_mode %}随机展示 50 条{% else %}当前展示最近导入的 50 条{% endif %}
+      </div>
+    </div>
+    <form method="get" class="row">
+      <input type="text" name="q" placeholder="搜索标题/年份" value="{{ q }}" />
+      <button class="btn" type="submit">搜索</button>
+      <a href="{{ url('home') }}?random=1{% if q %}&q={{ q }}{% endif %}" class="btn{% if random_mode %} primary{% endif %}">随机刷新</a>
+      <a href="{{ url('home') }}{% if q %}?q={{ q }}{% endif %}" class="btn{% if not random_mode %} primary{% endif %}">默认排序</a>
+    </form>
+  </div>
+
+  {% if movies %}
+    <div class="grid">
+      {% for m in movies %}
+        <div class="card">
+          <a href="{{ url('movie_detail', movie_id=m.id) }}">
+            <div class="poster">
+              {% if m.poster_url %}
+                <img src="{{ m.poster_url }}" alt="{{ m.title }}" />
+              {% else %}
+                <span class="muted">无海报</span>
+              {% endif %}
+            </div>
+            <div style="margin-top:10px;">
+              <div><strong>{{ m.title }}</strong></div>
+              <div class="muted">{{ m.year or '' }}</div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card">
+      <p style="margin:0;">暂无电影数据。去 <a href="{{ url('crawl') }}">爬取导入</a> 吧。</p>
+    </div>
+  {% endif %}
+{% endblock %}
+

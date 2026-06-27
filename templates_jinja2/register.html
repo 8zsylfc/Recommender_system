@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}注册 - 电影推荐系统{% endblock %}
+{% block content %}
+  <h2>注册</h2>
+  <div class="card">
+    <form method="post" class="stack">
+      <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+      {% if form.errors %}
+        <div style="background:#ffebee; border:1px solid #f44336; border-radius:8px; padding:12px; color:#c62828;">
+          {% for field in form %}
+            {% for error in field.errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+            <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <div class="field">
+        <label>用户名</label>
+        {{ form.username }}
+      </div>
+      <div class="field">
+        <label>密码</label>
+        {{ form.password1 }}
+        <div class="muted" style="font-size:12px;">至少8个字符，不能全是数字</div>
+      </div>
+      <div class="field">
+        <label>确认密码</label>
+        {{ form.password2 }}
+      </div>
+      <div>
+        <button class="btn primary" type="submit">注册并登录</button>
+      </div>
+    </form>
+  </div>
+{% endblock %}

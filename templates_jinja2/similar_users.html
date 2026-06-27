@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% block title %}相似用户 - 电影推荐系统{% endblock %}
+{% block content %}
+  <div style="margin: 14px 0;">
+    <h2 style="margin:0;">与你品味相似的用户</h2>
+    <div class="muted">基于协同过滤算法，找出评分习惯与你相似的用户</div>
+  </div>
+
+  {% if similar_users %}
+    <div class="stack" style="margin-top: 16px;">
+      {% for item in similar_users %}
+        <div class="card similar-user-card" data-user-id="{{ item.user.id }}" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; cursor: pointer; transition: box-shadow 0.2s;">
+          <div>
+            <div style="font-size: 18px; font-weight: 600;">{{ item.user.username }}</div>
+            <div class="muted">共同评分电影：{{ item.common_movies }} 部</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 24px; font-weight: bold; color: #0b57d0;">{{ "%.2f"|format(item.similarity) }}</div>
+            <div class="muted">相似度</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card" style="margin-top: 16px;">
+      <p style="margin:0;">
+        暂未找到与你品味相似的用户。建议：多评分一些电影，或等待更多用户加入评分。
+      </p>
+    </div>
+  {% endif %}
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">共同评分电影</h3>
+        <span class="modal-close">&times;</span>
+      </div>
+      <div id="modal-body" class="modal-body">
+        <div class="loading">加载中...</div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 0;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-header h3 {
+      margin: 0;
+    }
+    .modal-close {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--muted);
+      cursor: pointer;
+      line-height: 1;
+    }
+    .modal-close:hover {
+      color: var(--fg);
+    }
+    .modal-body {
+      padding: 16px 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .loading {
+      text-align: center;
+      color: var(--muted);
+      padding: 40px;
+    }
+    .rating-item {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      background: var(--card);
+    }
+    .rating-item:last-child {
+      margin-bottom: 0;
+    }
+    .rating-poster {
+      width: 60px;
+      height: 90px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #eee;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .rating-poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .rating-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .rating-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .rating-year {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .rating-scores {
+      display: flex;
+      gap: 20px;
+      text-align: center;
+    }
+    .score-box {
+      min-width: 50px;
+    }
+    .score-label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .score-value {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .similar-user-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const modal = document.getElementById('modal');
+      const modalTitle = document.getElementById('modal-title');
+      const modalBody = document.getElementById('modal-body');
+      const closeBtn = document.querySelector('.modal-close');
+      const cards = document.querySelectorAll('.similar-user-card');
+
+      function openModal(userId) {
+        modal.style.display = 'block';
+        modalBody.innerHTML = '<div class="loading">加载中...</div>';
+        
+        fetch(`/common-ratings/${userId}/`)
+          .then(response => response.json())
+          .then(data => {
+            modalTitle.textContent = `与 ${data.username} 的共同评分`;
+            
+            if (data.common_ratings.length === 0) {
+              modalBody.innerHTML = '<p style="text-align:center;color:var(--muted);">暂无共同评分的电影</p>';
+              return;
+            }
+            
+            let html = '';
+            data.common_ratings.forEach(item => {
+              const diff = Math.abs(item.my_score - item.target_score);
+              const diffText = diff === 0 ? '一致' : diff;
+              const diffColor = diff === 0 ? '#4caf50' : '#f44336';
+              
+              html += `
+                <div class="rating-item">
+                  <div class="rating-poster">
+                    ${item.movie_poster 
+                      ? `<img src="${item.movie_poster}" alt="${item.movie_title}" />` 
+                      : '<span style="font-size:12px;color:var(--muted);">无海报</span>'}
+                  </div>
+                  <div class="rating-info">
+                    <a href="/movies/${item.movie_id}/" style="text-decoration:none;color:inherit;">
+                      <div class="rating-title">${item.movie_title}</div>
+                      <div class="rating-year">${item.movie_year || ''}</div>
+                    </a>
+                  </div>
+                  <div class="rating-scores">
+                    <div class="score-box">
+                      <div class="score-label">我的评分</div>
+                      <div class="score-value" style="color:#0b57d0;">${item.my_score}</div>
+                    </div>
+                    <div class="score-box">
+                      <div class="score-label">${data.username}</div>
+                      <div class="score-value" style="color:#e65100;">${item.target_score}</div>
+                    </div>
+                    <div class="score-box">
+                      <div class="score-label">差异</div>
+                      <div class="score-value" style="color:${diffColor};">${diffText}</div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            });
+            modalBody.innerHTML = html;
+          })
+          .catch(error => {
+            modalBody.innerHTML = '<p style="text-align:center;color:#f44336;">加载失败，请重试</p>';
+          });
+      }
+
+      function closeModal() {
+        modal.style.display = 'none';
+      }
+
+      cards.forEach(card => {
+        card.addEventListener('click', function() {
+          const userId = this.getAttribute('data-user-id');
+          openModal(userId);
+        });
+      });
+
+      closeBtn.addEventListener('click', closeModal);
+      
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          closeModal();
+        }
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeModal();
+        }
+      });
+    });
+  </script>
+{% endblock %}

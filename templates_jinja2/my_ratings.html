@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}我的评分 - 电影推荐系统{% endblock %}
+{% block content %}
+  <div class="row" style="margin: 14px 0;">
+    <div>
+      <h2 style="margin:0;">我的评分</h2>
+      <div class="muted">共 {{ ratings|length }} 部电影</div>
+    </div>
+    <div class="row">
+      <a class="btn {{ '' if score_filter else 'primary' }}" href="{{ url('my_ratings') }}">全部</a>
+      {% for s in [1,2,3,4,5] %}
+        <a class="btn {{ 'primary' if score_filter == s else '' }}" href="{{ url('my_ratings') }}?score={{ s }}">{{ s }}星</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if ratings %}
+    <div class="grid">
+      {% for r in ratings %}
+        <div class="card">
+          <a href="{{ url('movie_detail', movie_id=r.movie.id) }}">
+            <div class="poster">
+              {% if r.movie.poster_url %}
+                <img src="{{ r.movie.poster_url }}" alt="{{ r.movie.title }}" />
+              {% else %}
+                <span class="muted">无海报</span>
+              {% endif %}
+            </div>
+            <div style="margin-top:10px;">
+              <div><strong>{{ r.movie.title }}</strong></div>
+              <div class="muted">{{ r.movie.year or '' }}</div>
+              <div style="margin-top:6px;">
+                <span class="tag" style="background:#fff3e0; border-color:#ffb74d;">评分: {{ r.score }}</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card">
+      <p style="margin:0;">
+        {% if score_filter %}
+          暂无 {{ score_filter }} 星评分的电影。
+        {% else %}
+          您还没有评分过任何电影。<a href="{{ url('home') }}">去浏览电影</a>
+        {% endif %}
+      </p>
+    </div>
+  {% endif %}
+{% endblock %}

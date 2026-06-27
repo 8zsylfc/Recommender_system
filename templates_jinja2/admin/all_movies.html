@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}所有电影 - 管理员{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <a href="{{ url('admin_dashboard') }}" class="back-link">← 返回控制台</a>
+    <h1>所有电影</h1>
+    <p class="subtitle">共 {{ movies|length }} 部电影</p>
+  </div>
+
+  <div class="filter-bar">
+    <form method="get" class="filter-form">
+      <div class="filter-group">
+        <label>电影名</label>
+        <input type="text" name="q" value="{{ q }}" placeholder="搜索电影...">
+      </div>
+      <div class="filter-group">
+        <label>年份</label>
+        <input type="number" name="year" value="{{ year_filter }}" placeholder="如 2023" min="1900" max="2030">
+      </div>
+      <button type="submit" class="btn primary">筛选</button>
+      <a href="{{ url('admin_all_movies') }}" class="btn">重置</a>
+    </form>
+  </div>
+
+  {% if movies %}
+    <div class="movies-grid">
+      {% for m in movies %}
+        <div class="movie-card">
+          <div class="movie-poster">
+            {% if m.poster_url %}
+              <img src="{{ m.poster_url }}" alt="{{ m.title }}">
+            {% else %}
+              <div class="no-poster">🎬</div>
+            {% endif %}
+          </div>
+          <div class="movie-info">
+            <a href="{{ url('movie_detail', movie_id=m.id) }}" class="movie-title">{{ m.title }}</a>
+            <div class="movie-meta">
+              <span class="movie-year">{{ m.year or '未知年份' }}</span>
+              {% if m.avg_score %}
+                <span class="movie-score">⭐ {{ m.avg_score|floatformat(1) }}</span>
+              {% endif %}
+            </div>
+            <div class="movie-stats">
+              <span class="stat-item">ID: {{ m.id }}</span>
+              <span class="stat-item">{{ m.rating_set.count }} 人评分</span>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🎬</div>
+      <p>暂无电影数据</p>
+      <a href="{{ url('crawl') }}" class="btn primary" style="margin-top: 16px;">去爬取导入</a>
+    </div>
+  {% endif %}
+
+  <style>
+    .page-header {
+      margin-bottom: 24px;
+    }
+    .back-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .back-link:hover {
+      color: var(--link);
+    }
+    .page-header h1 {
+      margin: 8px 0 4px;
+      font-size: 28px;
+    }
+    .subtitle {
+      color: var(--muted);
+      margin: 0;
+    }
+    .filter-bar {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .filter-form {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .filter-group label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .filter-group input {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      min-width: 140px;
+    }
+    .movies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .movie-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .movie-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+    .movie-poster {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .movie-poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .no-poster {
+      font-size: 48px;
+      opacity: 0.3;
+    }
+    .movie-info {
+      padding: 16px;
+    }
+    .movie-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg);
+      text-decoration: none;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .movie-title:hover {
+      color: var(--link);
+    }
+    .movie-meta {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .movie-year {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .movie-score {
+      color: #f9a825;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .movie-stats {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .stat-item {
+      background: #f5f7fa;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      background: #f8f9fa;
+      border-radius: 12px;
+    }
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    .empty-state p {
+      color: var(--muted);
+      margin: 0;
+    }
+  </style>
+{% endblock %}

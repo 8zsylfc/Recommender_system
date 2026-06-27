@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}推荐 - 电影推荐系统{% endblock %}
+{% block content %}
+  <div class="row" style="margin: 14px 0;">
+    <div>
+      <h2 style="margin:0;">给你的推荐</h2>
+      <div class="muted">当前算法：{{ '矩阵分解（MF）' if method == 'mf' else '协同过滤（CF）' }}</div>
+    </div>
+    <div class="row">
+      <a class="btn {{ 'primary' if method == 'mf' else '' }}" href="{{ url('recommendations') }}?method=mf">MF</a>
+      <a class="btn {{ 'primary' if method == 'cf' else '' }}" href="{{ url('recommendations') }}?method=cf">CF</a>
+    </div>
+  </div>
+
+  {% if movies %}
+    <div class="grid">
+      {% for m in movies %}
+        <div class="card">
+          <a href="{{ url('movie_detail', movie_id=m.id) }}">
+            <div class="poster">
+              {% if m.poster_url %}
+                <img src="{{ m.poster_url }}" alt="{{ m.title }}" />
+              {% else %}
+                <span class="muted">无海报</span>
+              {% endif %}
+            </div>
+            <div style="margin-top:10px;">
+              <div><strong>{{ m.title }}</strong></div>
+              <div class="muted">{{ m.year or '' }}</div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card">
+      <p style="margin:0;">暂无推荐结果。建议：多创建几个账号评分更多电影后再试。</p>
+    </div>
+  {% endif %}
+{% endblock %}
+

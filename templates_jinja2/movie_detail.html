@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ movie.title }} - 电影推荐系统{% endblock %}
+{% block content %}
+  <div class="row" style="margin: 16px 0;">
+    <div style="display:flex; gap: 14px; align-items:flex-start;">
+      <div style="width: 220px;">
+        <div class="poster">
+          {% if movie.poster_url %}
+            <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" />
+          {% else %}
+            <span class="muted">无海报</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="stack" style="flex:1;">
+        <h2 style="margin:0;">{{ movie.title }} <span class="muted">{{ movie.year or '' }}</span></h2>
+        {% if movie.detail_url %}
+          <div><a href="{{ movie.detail_url }}" target="_blank" rel="noreferrer">查看来源页面</a></div>
+        {% endif %}
+        <div class="muted">平均评分：{{ '%.2f'|format(avg_score) if avg_score else '暂无' }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;">我的评分</h3>
+    {% if request.user.is_authenticated %}
+      {% if user_rating %}
+        <div class="muted">你上次评分：{{ user_rating.score }} 星</div>
+      {% endif %}
+      <form method="post">
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+        {{ form.score }}
+        <div style="margin-top:10px;">
+          <button class="btn primary" type="submit">保存评分</button>
+        </div>
+      </form>
+    {% else %}
+      <p style="margin:0;">请先 <a href="{{ url('login') }}">登录</a> 后评分。</p>
+    {% endif %}
+  </div>
+{% endblock %}
